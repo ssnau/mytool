@@ -1,0 +1,29 @@
+{
+  "name": "home",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "git@git.musta.ch:xijin-liu/home.git",
+  "author": "Xijin Liu <xijin.liu@airbnb.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "parcel index.html",
+    "build": "parcel build index.html --public-url '.' --out-dir docs"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.14.1",
+    "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-react-hooks": "^1.2.0",
+    "parcel-bundler": "^1.11.0",
+    "prettier": "^1.16.4"
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "debug": "^4.1.1",
+    "normalize.css": "^8.0.1",
+    "react": "^16.8.3",
+    "react-bootstrap": "^1.0.0-beta.5",
+    "react-dom": "^16.8.3",
+    "styled-components": "^4.1.3"
+  }
+}

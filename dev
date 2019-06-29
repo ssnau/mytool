@@ -1,0 +1,4 @@
+#!/bin/bash
+
+#dev collab-compute.html
+./node_modules/.bin/parcel $1
