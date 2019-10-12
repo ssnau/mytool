@@ -75,6 +75,12 @@ const vietHanText = (() => {
   return output.join('\n');
 })();
 
+function randomPick(arr) {
+  const len = Object.keys(arr).length;
+  const index = Math.floor(Math.random() * len);
+  return arr[index];
+}
+
 class Hanviet extends React.Component {
   constructor() {
     super();
@@ -82,6 +88,7 @@ class Hanviet extends React.Component {
       currentTab: 'han-viet',
     };
     this.setKey = this.setKey.bind(this);
+    this.nextChar = this.nextChar.bind(this);
   }
 
   setKey(k) {
@@ -90,8 +97,20 @@ class Hanviet extends React.Component {
     });
   }
 
+  nextChar() {
+    const useHan = Math.random() - 0.5 > 0;
+    const viet = randomPick(Object.keys(v2hDict));
+    const hans = v2hDict[viet];
+    const next = (() => {
+      if (useHan) return { word: randomPick(hans), answer: viet };
+      return { word: viet, answer: hans.join(', ') }
+    })();
+    this.setState({ next });
+  }
+
   render() {
-    const { currentTab, } = this.state;
+    const { currentTab, next } = this.state;
+    const { nextChar } = this;
     return (
       <div style={{ marginTop: 12 }} >
       <Container>
@@ -101,6 +120,15 @@ class Hanviet extends React.Component {
           </Tab>
           <Tab eventKey="viet-han" title="viet-han">
             <pre>{vietHanText}</pre>
+          </Tab>
+          <Tab eventKey="test" title="test">
+             <Button   onClick={nextChar} variant="primary">NEXT</Button>
+
+              <br />
+              <br />
+             <pre> {next && next.word} </pre>
+              <br />
+             <pre> {next && next.answer} </pre>
           </Tab>
         </Tabs>
       </Container>
