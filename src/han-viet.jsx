@@ -60,6 +60,22 @@ function pad(str, len) {
   return str;
 }
 
+const alphabet=(function() {
+  return `Aa Áá Àà Ảả Ãã Ạạ Ăă Ắắ Ằằ Ẳẳ Ẵẵ Ặặ Ââ Ấấ Ầầ Ẩẩ Ẫẫ Ậậ BbCcDd Đđ Ee Éé Èè Ẻẻ Ẽẽ Ẹẹ Êê Ếế Ềề Ểể Ễễ Ệệ FfGgHh Íí Ìì Ỉỉ Ĩĩ Ịị KLMN Oo Óó Òò Ỏỏ Õõ Ọọ Ôô Ốố Ồồ Ổổ Ỗỗ Ộộ Ơơ Ớớ Ờờ Ởở Ỡỡ Ợợ PpQqRrSsTt Uu Úú Ùù Ủủ Ũũ Ụụ Ưư Ứứ Ừừ Ửử Ữữ Ựự VvWwXxYy Ýý Ỳỳ Ỷỷ Ỹỹ Ỵỵ Z`.split(/\s+/).join('');
+})();
+
+function compare(a, b) {
+  const l = Math.min(a.length, b.length);
+  for (let i = 0; i < l; i++) {
+    const aIndex = alphabet.indexOf(a[i]);
+    const bIndex = alphabet.indexOf(b[i]);
+    if (aIndex - bIndex !== 0) {
+      return aIndex - bIndex;
+    }
+  }
+  return 0;
+}
+
 const hanVietText = (() => {
   let output = '----- normal ------\n';
   h2vDict.normal.forEach(item => {
@@ -74,7 +90,7 @@ const hanVietText = (() => {
 
 const vietHanText = (() => {
   const output = [];
-  Object.keys(v2hDict).sort().forEach(v => {
+  Object.keys(v2hDict).sort(compare).forEach(v => {
     output.push(pad(`${v}:`, 10) + `${v2hDict[v].join(', ')}`);
   });
   return output.join('\n');
