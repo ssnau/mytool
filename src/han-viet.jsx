@@ -55,14 +55,19 @@ const v2hDict = (() => {
   return fullDict;
 })();
 
+function pad(str, len) {
+  if (str.length < len) return str + ' '.repeat(len - str.length);
+  return str;
+}
+
 const hanVietText = (() => {
   let output = '----- normal ------\n';
   h2vDict.normal.forEach(item => {
-    output += `${item.han}: ${item.viets.join(',')} \n`;
+    output += `${item.han}:    ${item.viets.join(',')} \n`;
   });
   output + '\n ----- extra -----\n';
   h2vDict.extra.forEach(item => {
-    output += `${item.han}: ${item.viets.join(',')} \n`;
+    output += `${item.han}:    ${item.viets.join(',')} \n`;
   });
   return output;
 })();
@@ -70,7 +75,7 @@ const hanVietText = (() => {
 const vietHanText = (() => {
   const output = [];
   Object.keys(v2hDict).sort().forEach(v => {
-    output.push(`${v}: ${v2hDict[v].join(', ')}`);
+    output.push(pad(`${v}:`, 10) + `${v2hDict[v].join(', ')}`);
   });
   return output.join('\n');
 })();
