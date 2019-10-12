@@ -37,7 +37,8 @@ function processRawDict(str) {
 
 const h2vDict = {
   normal: processRawDict(rawDict.normal),
-  extra: processRawDict(rawDict.extra),
+  // ignore extra
+  extra: [], //processRawDict(rawDict.extra),
 }
 
 const v2hDict = (() => {
