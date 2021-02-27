@@ -82,8 +82,8 @@ class Danwei extends React.Component {
   handleCompute2() {
     const number = String(byId('purenum').value).replace(/,/g, '').replace(/ /g, '');
     if (number === '') return alert('please enter number');
-    if (number[0] !== '1') return alert('number must starts with 1');
-    if (!/^0+$/.test(number.slice(1))) return alert('number can only contain 0, and starts with 1');
+    // if (number[0] !== '1') return alert('number must starts with 1');
+    // if (!/^0+$/.test(number.slice(1))) return alert('number can only contain 0, and starts with 1');
     if (number < 10000) return alert('number too small');
     const output = [];
     const rTable = {};
@@ -96,7 +96,7 @@ class Danwei extends React.Component {
       if (output.length > 2) return;
       if (v - 0 - number <= 0) {
         const danweis = rTable[v];
-        const multiple = number / v;
+        const multiple = (number / v).toFixed(4);
         danweis.forEach(d => {
           output.push(multiple + ' ' + d);
         })
