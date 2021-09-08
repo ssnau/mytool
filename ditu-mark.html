@@ -7,8 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>DITU MARK</title>
   <link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
-    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
+  <link rel="stylesheet" href="./mini-default.min.css">
   <style>
     html,
     body,
@@ -41,36 +40,134 @@
 
 <body>
   <div id="container"></div>
-  <button id='tool' style="position:fixed;top:100px;right:100px;z-index: 999;" onclick="openModal()"> Tool</button>
+  <label for="modal-control"
+    style="position:fixed;top:100px;right:100px;z-index: 999;background-color: bisque;">显示配置</label>
+  <input type="checkbox" id="modal-control" class="modal">
+  <div>
+    <div class="card" style="max-width:780px;">
+      <label for="modal-control" class="modal-close"></label>
+      <h3 class="section">配置</h3>
+      <div class="row" id='navContainer'>
+        <button class="small nav-btn" data-to='dCenter' id='nav-default'>设置中心</button>
+        <button class="small nav-btn" data-to='dMark'>标记POI</button>
+        <button class="small nav-btn" data-to='dSearch'>搜索POI</button>
+      </div>
+      <div id='dCenter' class='nav-content'>
+        <legend>地图中心</legend>
+        <input type="text" class="center-input" id='centerLat' placeholder="经度" value="39.90923 " />
+        <input type="text" class="center-input" id='centerLng' placeholder="纬度" value="116.397428" />
+        <button class="primary" onclick="setCenter()">确定</button>
+      </div>
+
+      <div id='dMark' class='nav-content'>
+        <legend>要标记的POI列表</legend>
+        <textarea placeholder="名字,经度,纬度" id='pois' style="width:96%"></textarea>
+        <button class="primary" onclick="markIt()">确定标记</button>
+      </div>
+
+      <div id='dSearch' class='nav-content'>
+        <legend>输入城市和POI名</legend>
+        <input type="text" class="search-input" id='searchCity' value="杭州" />
+        <input type="text" class="search-input" id='searchPOI' value="西湖国际中心" />
+        <button class="primary" onclick="search()">搜索</button>
+        <br />
+        <pre id='searchResult'></pre>
+      </div>
+
+    </div>
+  </div>
+  <script>
+
+    function resetNav() {
+      Array.from(document.querySelectorAll('.nav-content')).forEach(e => e.style.display = 'none');
+      Array.from(document.querySelectorAll('.nav-btn')).forEach(e => e.className = e.className.replace('inverse', ' ').trim());
+    }
+    function selectNav(target) {
+      const toID = target.dataset['to'];
+      if (!toID) return;
+      resetNav();
+      document.getElementById(toID).style.display = 'block';
+      target.className += ' inverse ';
+    }
+    resetNav();
+    selectNav(document.getElementById('nav-default'));
+    document.getElementById('navContainer').addEventListener('click', (e) => {
+      selectNav(e.target);
+    });
+    function setCenter() {
+      map.setCenter([
+        document.getElementById('centerLng').value - 0,
+        document.getElementById('centerLat').value - 0,
+      ]);
+    }
+
+    function search() {
+      var placeSearch = new AMap.PlaceSearch({
+        // city 指定搜索所在城市，支持传入格式有：城市名、citycode和adcode
+        city: document.getElementById('searchCity').value,
+      });
+
+      placeSearch.search(document.getElementById('searchPOI').value, function (status, result) {
+        // 查询成功时，result即对应匹配的POI信息
+        console.log(result);
+        const firstPOI = result.poiList.count ? result.poiList.pois[0] : {};
+        document.getElementById('searchResult').innerHTML = `
+${firstPOI.location.lat} ${firstPOI.location.lng}  ${firstPOI.address}
+        `
+      });
+    }
+  </script>
   <script type="text/javascript"
-    src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62"></script>
+    src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62&plugin=AMap.PlaceSearch"></script>
+  <script type="text/javascript" src="https://cache.amap.com/lbs/static/PlaceSearchRender.js"></script>
   <script type="text/javascript">
-    var marker, map = new AMap.Map("container", {
+    const map = new AMap.Map("container", {
       resizeEnable: true,
-      center: [116.397428, 39.90923],
+      center: [120.159949, 30.257373],
       zoom: 13
     });
+    let markers = [];
     // 实例化点标记
-    function addMarker({ position, text }) {
-      marker = new AMap.Marker({
+    function addMarker({ position, text, color }) {
+      const marker = new AMap.Marker({
         icon: "//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
-        offset: new AMap.Pixel(-13, -30)
+        position,
+        offset: new AMap.Pixel(-1, -1)
       });
       marker.setMap(map);
       // 点标记中的文本
-      var markerSpan = document.createElement("span");
+      const markerSpan = document.createElement("span");
       markerSpan.className = 'marker';
+      markerSpan.style.backgroundColor = color;
       markerSpan.innerHTML = text;
-      // markerContent.appendChild(markerSpan);
       marker.setContent(markerSpan); //更新点标记内容
+      markers.push(marker);
     }
-    setTimeout(() => addMarker({
-      position: [116.406315, 39.908775],
-      text: 'hhhh',
-    }), 5000)
 
-    window.openModal = function () {
-      alert('hhhh')
+    function clearMarker() {
+      markers.forEach((m, i) => {
+        m.setMap(null);
+        markers[i] = null;
+      });
+      markers = markers.filter(Boolean);
+    }
+
+    window.markIt = function () {
+      clearMarker();
+      const lines = document.getElementById('pois').value.split('\n');
+      const pois = lines.map(l => {
+        const sections = l.split(/\s+/);
+        if (!sections[2]) return;
+        return {
+          text: sections[0],
+          position: [sections[2] - 0, sections[1] - 0],
+          color: sections[3] || '#1976d2'
+        }
+      }).filter(Boolean).forEach(p =>
+        addMarker(p)
+      );
+      alert("done");
+
     }
   </script>
 </body>
