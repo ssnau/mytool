@@ -8,8 +8,12 @@ const htmlFiles = files.filter(f => {
 });
 exec(`rm -rf ${path.join(__dirname, 'docs')}`);
 exec(`rm -rf ${path.join(__dirname, 'dist')}`);
+/*
 htmlFiles.forEach(f => {
   const s = exec(`cd ${__dirname} && ./node_modules/.bin/parcel build ${f} --public-url '.' --out-dir docs`);
   console.log(String(s));
 });
+*/
+const s = exec(`cd ${__dirname} && ./node_modules/.bin/parcel build index.html --public-url '.' --out-dir docs`);
+console.log(String(s));
 
