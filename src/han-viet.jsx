@@ -138,19 +138,19 @@ class Hanviet extends React.Component {
       <Container>
         <Tabs activeKey={currentTab} onSelect={k => this.setKey(k)}>
           <Tab eventKey="han-viet" title="han-viet">
-            <pre>{hanVietText}</pre>
+            <pre style={{ fontFamily: 'lora' }}>{hanVietText}</pre>
           </Tab>
           <Tab eventKey="viet-han" title="viet-han">
-            <pre>{vietHanText}</pre>
+            <pre style={{ fontFamily: 'lora' }}>{vietHanText}</pre>
           </Tab>
           <Tab eventKey="test" title="test">
              <Button   onClick={nextChar} variant="primary">NEXT</Button>
 
               <br />
               <br />
-             <pre> {next && next.word} </pre>
+             <pre  style={{ fontFamily: 'lora' }}> {next && next.word} </pre>
               <br />
-             <pre> {next && next.answer} </pre>
+             <pre style={{ fontFamily: 'lora' }}> {next && next.answer} </pre>
           </Tab>
         </Tabs>
       </Container>
