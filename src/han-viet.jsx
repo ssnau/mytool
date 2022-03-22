@@ -31,8 +31,8 @@ function processRawDict(str) {
       return {
         han: han.trim(),
         viets: viets.map(v => v.trim()).filter(x => x.trim().length),
-    };
-  });
+      };
+    });
 }
 
 const h2vDict = {
@@ -61,7 +61,7 @@ function pad(str, len) {
   return str;
 }
 
-const alphabet=(function() {
+const alphabet = (function () {
   return `Aa Áá Àà Ảả Ãã Ạạ Ăă Ắắ Ằằ Ẳẳ Ẵẵ Ặặ Ââ Ấấ Ầầ Ẩẩ Ẫẫ Ậậ BbCcDd Đđ Ee Éé Èè Ẻẻ Ẽẽ Ẹẹ Êê Ếế Ềề Ểể Ễễ Ệệ FfGgHh Íí Ìì Ỉỉ Ĩĩ Ịị KLMN Oo Óó Òò Ỏỏ Õõ Ọọ Ôô Ốố Ồồ Ổổ Ỗỗ Ộộ Ơơ Ớớ Ờờ Ởở Ỡỡ Ợợ PpQqRrSsTt Uu Úú Ùù Ủủ Ũũ Ụụ Ưư Ứứ Ừừ Ửử Ữữ Ựự VvWwXxYy Ýý Ỳỳ Ỷỷ Ỹỹ Ỵỵ Z`.split(/\s+/).join('');
 })();
 
@@ -135,25 +135,28 @@ class Hanviet extends React.Component {
     const { nextChar } = this;
     return (
       <div style={{ marginTop: 12 }} >
-      <Container>
-        <Tabs activeKey={currentTab} onSelect={k => this.setKey(k)}>
-          <Tab eventKey="han-viet" title="han-viet">
-            <pre style={{ fontFamily: 'lora' }}>{hanVietText}</pre>
-          </Tab>
-          <Tab eventKey="viet-han" title="viet-han">
-            <pre style={{ fontFamily: 'lora' }}>{vietHanText}</pre>
-          </Tab>
-          <Tab eventKey="test" title="test">
-             <Button   onClick={nextChar} variant="primary">NEXT</Button>
+        <div style={{ margin: "16px " }}>
+          <a href="https://hvdic.thivien.net/whv" target="_blank"> to the site </a>
+        </div>
+        <Container>
+          <Tabs activeKey={currentTab} onSelect={k => this.setKey(k)}>
+            <Tab eventKey="han-viet" title="han-viet">
+              <pre style={{ fontFamily: 'lora' }}>{hanVietText}</pre>
+            </Tab>
+            <Tab eventKey="viet-han" title="viet-han">
+              <pre style={{ fontFamily: 'lora' }}>{vietHanText}</pre>
+            </Tab>
+            <Tab eventKey="test" title="test">
+              <Button onClick={nextChar} variant="primary">NEXT</Button>
 
               <br />
               <br />
-             <pre  style={{ fontFamily: 'lora' }}> {next && next.word} </pre>
+              <pre style={{ fontFamily: 'lora' }}> {next && next.word} </pre>
               <br />
-             <pre style={{ fontFamily: 'lora' }}> {next && next.answer} </pre>
-          </Tab>
-        </Tabs>
-      </Container>
+              <pre style={{ fontFamily: 'lora' }}> {next && next.answer} </pre>
+            </Tab>
+          </Tabs>
+        </Container>
       </div>
     );
   }
