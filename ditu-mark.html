@@ -36,6 +36,21 @@
       border-radius: 3px;
     }
   </style>
+    <script>
+      const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+      function writeScript(url) {
+        document.write("<" + "script " + `type="text/javascript" src="${url}"></` + "script" + ">");
+      }
+      if (params.gaodejskey) {
+        writeScript(`https://webapi.amap.com/maps?v=1.4.15&key=${params.gaodejskey}&plugin=AMap.PlaceSearch`);
+        writeScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js");
+      } else {
+        const url = location.origin + location.pathname;
+        document.body.innerHTML = (`gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`);
+      }
+    </script>
 </head>
 
 <body>
@@ -138,21 +153,7 @@
       })
     }
   </script>
-  <script>
-    const params = new Proxy(new URLSearchParams(window.location.search), {
-      get: (searchParams, prop) => searchParams.get(prop),
-    });
-    function writeScript(url) {
-      document.write("<" + "script " + `type="text/javascript" src="${url}"></` + "script" + ">");
-    }
-    if (params.gaodejskey) {
-      writeScript(`https://webapi.amap.com/maps?v=1.4.15&key=${params.gaodejskey}&plugin=AMap.PlaceSearch`);
-      writeScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js");
-    } else {
-      const url = location.origin + location.pathname;
-      document.body.innerHTML = (`gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`);
-    }
-  </script>
+
   <script type="text/javascript">
     if (!params.gaodejskey) throw new Error("no gaodejskey founded.");
     const map = new AMap.Map("container", {
