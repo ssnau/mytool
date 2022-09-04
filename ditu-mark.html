@@ -1,177 +1,322 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta other="__ver: 1662316668016" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>DITU MARK</title>
+    <link
+      href="//fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="./mini-default.min.css" />
+    <style>
+      html,
+      body,
+      #container {
+        height: 100%;
+        width: 100%;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>DITU MARK</title>
-  <link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="./mini-default.min.css">
-  <style>
-    html,
-    body,
-    #container {
-      height: 100%;
-      width: 100%;
-    }
+      .amap-icon img,
+      .amap-marker-content img {
+        width: 25px;
+        height: 34px;
+      }
 
-    .amap-icon img,
-    .amap-marker-content img {
-      width: 25px;
-      height: 34px;
-    }
+      .marker {
+        position: absolute;
+        top: -20px;
+        right: -118px;
+        color: #fff;
+        padding: 4px 10px;
+        box-shadow: 1px 1px 1px rgba(10, 10, 10, 0.2);
+        white-space: nowrap;
+        font-size: 12px;
+        font-family: "";
+        background-color: #25a5f7;
+        border-radius: 3px;
+      }
+    </style>
+    <script>
+      function waitForFn(fn, opt) {
+        const intv = 100;
+        const timeout = 0;
+        const startTime = Date.now();
+        return new Promise((resolve) => {
+          function check() {
+            if (timeout && Date.now() - startTime > timeout) {
+              return resolve(false); // 因为只有fn()返回truthy时，才会正常resolve。所以resolve为false时，可以用来表示超时。
+            }
+            if (fn()) return resolve(fn());
+            setTimeout(check, intv);
+          }
+          check();
+        });
+      }
+      const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+      function writeScript(url) {
+        document.write(
+          "<" +
+            "script " +
+            `type="text/javascript" src="${url}"></` +
+            "script" +
+            ">"
+        );
+      }
+      function insertScript(url) {
+        var s = document.createElement("script");
+        s.setAttribute("src", url);
+        document.head.appendChild(s);
+      }
+      if (params.gaodejskey) {
+        insertScript(
+          `https://webapi.amap.com/maps?v=1.4.15&key=${
+            params.gaodejskey
+          }&plugin=AMap.PlaceSearch`
+        );
+        waitForFn(() => typeof AMap !== "undefined").then(() =>
+          insertScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js")
+        );
+      } else {
+        setTimeout(() => {
+          const url = location.origin + location.pathname;
+          document.write(
+            `gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`
+          );
+        });
+      }
+    </script>
+  </head>
 
-    .marker {
-      position: absolute;
-      top: -20px;
-      right: -118px;
-      color: #fff;
-      padding: 4px 10px;
-      box-shadow: 1px 1px 1px rgba(10, 10, 10, .2);
-      white-space: nowrap;
-      font-size: 12px;
-      font-family: "";
-      background-color: #25A5F7;
-      border-radius: 3px;
-    }
-  </style>
-</head>
+  <body>
+    <div id="container"></div>
+    <label
+      for="modal-control"
+      style="position:fixed;top:100px;right:100px;z-index: 999;background-color: bisque;"
+      >显示配置</label
+    >
+    <input type="checkbox" id="modal-control" class="modal" />
+    <div>
+      <div class="card" style="max-width:780px;">
+        <label for="modal-control" class="modal-close"></label>
+        <h3 class="section">配置</h3>
+        <div class="row" id="navContainer">
+          <button class="small nav-btn" data-to="dCenter" id="nav-default">
+            设置中心
+          </button>
+          <button class="small nav-btn" data-to="dMark">标记POI</button>
+          <button class="small nav-btn" data-to="dSearch">搜索POI</button>
+        </div>
+        <div id="dCenter" class="nav-content">
+          <legend>地图中心</legend>
 
-<body>
-  <div id="container"></div>
-  <label for="modal-control"
-    style="position:fixed;top:100px;right:100px;z-index: 999;background-color: bisque;">显示配置</label>
-  <input type="checkbox" id="modal-control" class="modal">
-  <div>
-    <div class="card" style="max-width:780px;">
-      <label for="modal-control" class="modal-close"></label>
-      <h3 class="section">配置</h3>
-      <div class="row" id='navContainer'>
-        <button class="small nav-btn" data-to='dCenter' id='nav-default'>设置中心</button>
-        <button class="small nav-btn" data-to='dMark'>标记POI</button>
-        <button class="small nav-btn" data-to='dSearch'>搜索POI</button>
+          <input
+            type="text"
+            class="center-input"
+            id="centerLng"
+            placeholder="纬度"
+            value="116.397428"
+          />
+          <input
+            type="text"
+            class="center-input"
+            id="centerLat"
+            placeholder="经度"
+            value="39.90923 "
+          />
+          <button class="primary" onclick="setCenter()">确定</button>
+
+          <legend>快捷方式</legend>
+          <button onclick="setCenter(116.397029,39.91784)">北京</button>
+          <button onclick="setCenter(121.499718, 31.239703)">上海</button>
+          <button onclick="setCenter(120.164704, 30.25221)">杭州</button>
+          <button onclick="setCenter(104.078657, 30.654899)">成都</button>
+          <button onclick="setCenter(113.324553, 23.106414)">广州</button>
+          <button onclick="setCenter(114.059812, 22.530799)">深圳</button>
+        </div>
+
+        <div id="dMark" class="nav-content">
+          <legend>要标记的POI列表</legend>
+          <textarea
+            placeholder="名字,经度,纬度"
+            id="pois"
+            style="width:96%"
+          ></textarea>
+          <button class="primary" onclick="markIt()">确定标记</button>
+        </div>
+
+        <div id="dSearch" class="nav-content">
+          <legend>输入城市和POI名</legend>
+          <input
+            type="text"
+            class="search-input"
+            id="searchCity"
+            value="杭州"
+          />
+          <input
+            type="text"
+            class="search-input"
+            id="searchPOI"
+            value="西湖国际中心"
+          />
+          <button class="primary" onclick="search()">搜索</button>
+          <br />
+          <pre id="searchResult"></pre>
+
+          <p style="padding: 6px 0px;">
+            tip: 可以用 window.apiSearch(city, poiName) 来脚本化。
+            <img
+              src="https://d2q5pvpg2i44d2.cloudfront.net/resources/20228/a28-4287-9b85-d9560b297385.png"
+            />
+          </p>
+        </div>
       </div>
-      <div id='dCenter' class='nav-content'>
-        <legend>地图中心</legend>
-        <input type="text" class="center-input" id='centerLat' placeholder="经度" value="39.90923 " />
-        <input type="text" class="center-input" id='centerLng' placeholder="纬度" value="116.397428" />
-        <button class="primary" onclick="setCenter()">确定</button>
-      </div>
-
-      <div id='dMark' class='nav-content'>
-        <legend>要标记的POI列表</legend>
-        <textarea placeholder="名字,经度,纬度" id='pois' style="width:96%"></textarea>
-        <button class="primary" onclick="markIt()">确定标记</button>
-      </div>
-
-      <div id='dSearch' class='nav-content'>
-        <legend>输入城市和POI名</legend>
-        <input type="text" class="search-input" id='searchCity' value="杭州" />
-        <input type="text" class="search-input" id='searchPOI' value="西湖国际中心" />
-        <button class="primary" onclick="search()">搜索</button>
-        <br />
-        <pre id='searchResult'></pre>
-      </div>
-
     </div>
-  </div>
-  <script>
-
-    function resetNav() {
-      Array.from(document.querySelectorAll('.nav-content')).forEach(e => e.style.display = 'none');
-      Array.from(document.querySelectorAll('.nav-btn')).forEach(e => e.className = e.className.replace('inverse', ' ').trim());
-    }
-    function selectNav(target) {
-      const toID = target.dataset['to'];
-      if (!toID) return;
+    <script>
+      function resetNav() {
+        Array.from(document.querySelectorAll(".nav-content")).forEach(
+          (e) => (e.style.display = "none")
+        );
+        Array.from(document.querySelectorAll(".nav-btn")).forEach(
+          (e) => (e.className = e.className.replace("inverse", " ").trim())
+        );
+      }
+      function selectNav(target) {
+        const toID = target.dataset["to"];
+        if (!toID) return;
+        resetNav();
+        document.getElementById(toID).style.display = "block";
+        target.className += " inverse ";
+      }
       resetNav();
-      document.getElementById(toID).style.display = 'block';
-      target.className += ' inverse ';
-    }
-    resetNav();
-    selectNav(document.getElementById('nav-default'));
-    document.getElementById('navContainer').addEventListener('click', (e) => {
-      selectNav(e.target);
-    });
-    function setCenter() {
-      map.setCenter([
-        document.getElementById('centerLng').value - 0,
-        document.getElementById('centerLat').value - 0,
-      ]);
-    }
-
-    function search() {
-      var placeSearch = new AMap.PlaceSearch({
-        // city 指定搜索所在城市，支持传入格式有：城市名、citycode和adcode
-        city: document.getElementById('searchCity').value,
+      selectNav(document.getElementById("nav-default"));
+      document.getElementById("navContainer").addEventListener("click", (e) => {
+        selectNav(e.target);
       });
+      function setCenter(lng, lat) {
+        window.map.setCenter([
+          lng || document.getElementById("centerLng").value - 0,
+          lat || document.getElementById("centerLat").value - 0,
+        ]);
+      }
 
-      placeSearch.search(document.getElementById('searchPOI').value, function (status, result) {
-        // 查询成功时，result即对应匹配的POI信息
-        console.log(result);
-        const firstPOI = result.poiList.count ? result.poiList.pois[0] : {};
-        document.getElementById('searchResult').innerHTML = `
-${firstPOI.location.lat} ${firstPOI.location.lng}  ${firstPOI.address}
-        `
-      });
-    }
-    window.setCenter = setCenter;
-    window.search = search;
-  </script>
-  <script type="text/javascript"
-    src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62&plugin=AMap.PlaceSearch"></script>
-  <script type="text/javascript" src="https://cache.amap.com/lbs/static/PlaceSearchRender.js"></script>
-  <script type="text/javascript">
-    const map = new AMap.Map("container", {
-      resizeEnable: true,
-      center: [120.159949, 30.257373],
-      zoom: 13
-    });
-    let markers = [];
-    // 实例化点标记
-    function addMarker({ position, text, color }) {
-      const marker = new AMap.Marker({
-        icon: "//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
-        position,
-        offset: new AMap.Pixel(-1, -1)
-      });
-      marker.setMap(map);
-      // 点标记中的文本
-      const markerSpan = document.createElement("span");
-      markerSpan.className = 'marker';
-      markerSpan.style.backgroundColor = color;
-      markerSpan.innerHTML = text;
-      marker.setContent(markerSpan); //更新点标记内容
-      markers.push(marker);
-    }
+      function search() {
+        var placeSearch = new AMap.PlaceSearch({
+          // city 指定搜索所在城市，支持传入格式有：城市名、citycode和adcode
+          city: document.getElementById("searchCity").value,
+        });
+        const resultElem = document.getElementById("searchResult");
+        resultElem.innerHTML = " loading...";
+        placeSearch.search(document.getElementById("searchPOI").value, function(
+          status,
+          result
+        ) {
+          // 查询成功时，result即对应匹配的POI信息
+          console.log(result);
+          const firstPOI = result.poiList.count ? result.poiList.pois[0] : {};
+          resultElem.innerHTML = `
+        ${firstPOI.address}, ${firstPOI.location.lng}, ${firstPOI.location.lat} 
+        `.trim();
+        });
+      }
+      window.setCenter = setCenter;
+      window.search = search;
+      window.apiSearch = function(city, name) {
+        return new Promise((resolve) => {
+          new AMap.PlaceSearch({ city }).search(name, (status, result) => {
+            resolve(result.poiList.count ? result.poiList.pois[0] : null);
+          });
+        });
+      };
+    </script>
 
-    function clearMarker() {
-      markers.forEach((m, i) => {
-        m.setMap(null);
-        markers[i] = null;
-      });
-      markers = markers.filter(Boolean);
-    }
-
-    window.markIt = function () {
-      clearMarker();
-      const lines = document.getElementById('pois').value.split('\n');
-      const pois = lines.map(l => {
-        const sections = l.split(/\s+/);
-        if (!sections[2]) return;
-        return {
-          text: sections[0],
-          position: [sections[2] - 0, sections[1] - 0],
-          color: sections[3] || '#1976d2'
+    <script type="text/javascript">
+      if (!params.gaodejskey) throw new Error("no gaodejskey founded.");
+      waitForFn(() => typeof AMap !== "undefined" && AMap.Map).then(() => {
+        const map = new AMap.Map("container", {
+          resizeEnable: true,
+          center: [120.159949, 30.257373], // lng, lat
+          zoom: 13,
+        });
+        window.map = map;
+        let markers = [];
+        // 实例化点标记
+        function addMarker({ position, text, color }) {
+          const marker = new AMap.Marker({
+            icon:
+              "//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+            position,
+            offset: new AMap.Pixel(-1, -1),
+          });
+          marker.setMap(map);
+          // 点标记中的文本
+          const markerSpan = document.createElement("span");
+          markerSpan.className = "marker";
+          markerSpan.style.backgroundColor = color;
+          markerSpan.innerHTML = text;
+          marker.setContent(markerSpan); //更新点标记内容
+          markers.push(marker);
         }
-      }).filter(Boolean).forEach(p =>
-        addMarker(p)
-      );
-      alert("done");
 
-    }
-  </script>
-</body>
+        function clearMarker() {
+          markers.forEach((m, i) => {
+            m.setMap(null);
+            markers[i] = null;
+          });
+          markers = markers.filter(Boolean);
+        }
 
+        window.markIt = function() {
+          clearMarker();
+          const lines = document.getElementById("pois").value.split("\n");
+          const invalids = [];
+          const pois = lines
+            .map((x) => x.trim())
+            .filter(Boolean)
+            .map((l) => {
+              const sections = l
+                .split(/,/)
+                .map((x) => x.trim())
+                .filter(Boolean);
+              const len = sections.length;
+              const isColor = (x) => x && x[0] === "#";
+              const hasColor = isColor(sections[len - 1]);
+              const lng = hasColor
+                ? sections[len - 3].trim()
+                : sections[len - 2].trim() - 0;
+              const lat = hasColor
+                ? sections[len - 2].trim()
+                : sections[len - 1].trim() - 0;
+              if (/NaN/.test(lng) || /NaN/.test(lat)) {
+                console.log(l + " is invalid");
+                invalids.push(l);
+                return null;
+              }
+
+              return {
+                text: sections[0].trim(),
+                position: [lng, lat], // lng, lat
+                color: hasColor ? sections[len - 1] : "#1976d2",
+              };
+            })
+            .filter(Boolean);
+          if (pois.length === 0) return alert("no pois founded");
+          pois.forEach((p) => addMarker(p));
+          alert(
+            "done! marked " +
+              pois.length +
+              " pois, " +
+              (invalids.length
+                ? " invalids are: \n" + invalids.join(" \n")
+                : "")
+          );
+        };
+      });
+    </script>
+  </body>
 </html>

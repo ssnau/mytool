@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta other="__ver: 1662316668016" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
     <style>
@@ -14,10 +15,8 @@
     </style>
     <title>POLYGON TEST</title>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
-    <script src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62&plugin=AMap.PolyEditor,AMap.PlaceSearch"></script>
-<script type="text/javascript" src="https://cache.amap.com/lbs/static/PlaceSearchRender.js"></script>
-    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
-</head>
+    
+ </head>
 <body>
 <div id="container"></div>
 <div class="nav-card" style="width: 120px;position:fixed;top:10px;left:10px;width:200px;">
@@ -32,10 +31,47 @@
 <div style="position:fixed;bottom:20px;left:10px;">
   <textarea style="width:200px;height:60px;font-size:9px;" id="polygondata" ></textarea>
 </div>
-
+<script>
+  const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+  function waitForFn(fn, opt) {
+  const intv =   100;
+  const timeout =  0;
+  const startTime = Date.now();
+  return new Promise(resolve => {
+    function check() {
+      if (timeout && Date.now() - startTime > timeout) {
+        return resolve(false); // 因为只有fn()返回truthy时，才会正常resolve。所以resolve为false时，可以用来表示超时。
+      }
+      if (fn()) return resolve(fn());
+      setTimeout(check, intv);
+    }
+    check();
+  });
+}
+function insertScript(url) {
+        var my_awesome_script = document.createElement('script');
+        my_awesome_script.setAttribute('src', url);
+        document.head.appendChild(my_awesome_script);
+      }
+  function writeScript(url) {
+    document.write("<script " + `type="text/javascript"
+  src="${url}"></` + "script>");
+  }
+  if (params.gaodejskey) {
+    writeScript(`https://webapi.amap.com/maps?v=1.4.15&key=${params.gaodejskey}&plugin=AMap.PolyEditor,AMap.PlaceSearch`);
+    waitForFn(() => typeof AMap !== "undefined").then(() => insertScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js"));
+    waitForFn(() => typeof AMap !== "undefined").then(() => insertScript("https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"));
+  } else {
+    const url = location.origin  + location.pathname;
+    document.body.innerHTML = (`gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`);
+   }
+</script>
 <script type="text/javascript">
+  if (!params.gaodejskey) throw new Error("no gaodejskey founded");
 // https://lbs.amap.com/api/javascript-api/guide/overlays/vector-overlay#polygon
-
+waitForFn(() => typeof AMap !== "undefined" && AMap.Map && AMap.Polygon && AMap.PolyEditor && AMap.PlaceSearch).then(() => {
   const map = new AMap.Map("container", {
   center: [116.399245, 39.917267],
   zoom: 14
@@ -110,6 +146,8 @@ window.restart = function() {
     [lng - offset, lat + offset],
   ]);
 }
+})
+
 </script>
 </body>
 </html>

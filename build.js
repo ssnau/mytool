@@ -14,6 +14,11 @@ htmlFiles.forEach(f => {
   console.log(String(s));
 });
 */
+const version = Date.now();
+htmlFiles.forEach(f => {
+  const indexContent = fs.readFileSync(f, 'utf-8');
+  fs.writeFileSync(f, indexContent.replace(/__ver:\s*\d+/, "__ver: " + version), 'utf-8');
+});
 const s = exec(`cd ${__dirname} && ./node_modules/.bin/parcel build index.html --public-url '.' --out-dir docs`);
 console.log(String(s));
 
