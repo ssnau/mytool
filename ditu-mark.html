@@ -54,9 +54,18 @@
       </div>
       <div id='dCenter' class='nav-content'>
         <legend>地图中心</legend>
-        <input type="text" class="center-input" id='centerLat' placeholder="经度" value="39.90923 " />
+     
         <input type="text" class="center-input" id='centerLng' placeholder="纬度" value="116.397428" />
+        <input type="text" class="center-input" id='centerLat' placeholder="经度" value="39.90923 " />
         <button class="primary" onclick="setCenter()">确定</button>
+
+        <legend>快捷方式</legend>
+        <button onclick="setCenter(116.397029,39.91784)">北京</button>
+        <button onclick="setCenter(121.499718, 31.239703)">上海</button>
+        <button onclick="setCenter(120.164704, 30.25221)">杭州</button>
+        <button onclick="setCenter(104.078657, 30.654899)">成都</button>
+        <button onclick="setCenter(113.324553, 23.106414)">广州</button>
+        <button onclick="setCenter(114.059812, 22.530799)">深圳</button>
       </div>
 
       <div id='dMark' class='nav-content'>
@@ -72,6 +81,8 @@
         <button class="primary" onclick="search()">搜索</button>
         <br />
         <pre id='searchResult'></pre>
+
+        <p style="padding: 6px 0px;">tip: 可以用 window.apiSearch(city, poiName) 来脚本化。  <img src="https://d2q5pvpg2i44d2.cloudfront.net/resources/20228/a28-4287-9b85-d9560b297385.png" /></p>
       </div>
 
     </div>
@@ -94,10 +105,10 @@
     document.getElementById('navContainer').addEventListener('click', (e) => {
       selectNav(e.target);
     });
-    function setCenter() {
+    function setCenter(lng, lat) {
       map.setCenter([
-        document.getElementById('centerLng').value - 0,
-        document.getElementById('centerLat').value - 0,
+        lng || document.getElementById('centerLng').value - 0,
+        lat || document.getElementById('centerLat').value - 0,
       ]);
     }
 
@@ -106,26 +117,47 @@
         // city 指定搜索所在城市，支持传入格式有：城市名、citycode和adcode
         city: document.getElementById('searchCity').value,
       });
-
+      const resultElem =  document.getElementById('searchResult');
+      resultElem.innerHTML = " loading...";
       placeSearch.search(document.getElementById('searchPOI').value, function (status, result) {
         // 查询成功时，result即对应匹配的POI信息
         console.log(result);
         const firstPOI = result.poiList.count ? result.poiList.pois[0] : {};
-        document.getElementById('searchResult').innerHTML = `
-${firstPOI.location.lat} ${firstPOI.location.lng}  ${firstPOI.address}
-        `
+        resultElem.innerHTML = `
+        ${firstPOI.address}, ${firstPOI.location.lng}, ${firstPOI.location.lat} 
+        `.trim();
       });
     }
     window.setCenter = setCenter;
     window.search = search;
+    window.apiSearch = function (city, name) {
+      return new Promise(resolve => {
+        new AMap.PlaceSearch({ city }).search(name, (status, result) => {
+          resolve(result.poiList.count ? result.poiList.pois[0] : null);
+        });
+      })
+    }
   </script>
-  <script type="text/javascript"
-    src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62&plugin=AMap.PlaceSearch"></script>
-  <script type="text/javascript" src="https://cache.amap.com/lbs/static/PlaceSearchRender.js"></script>
+  <script>
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+      get: (searchParams, prop) => searchParams.get(prop),
+    });
+    function writeScript(url) {
+      document.write("<" + "script " + `type="text/javascript" src="${url}"></` + "script" + ">");
+    }
+    if (params.gaodejskey) {
+      writeScript(`https://webapi.amap.com/maps?v=1.4.15&key=${params.gaodejskey}&plugin=AMap.PlaceSearch`);
+      writeScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js");
+    } else {
+      const url = location.origin + location.pathname;
+      document.body.innerHTML = (`gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`);
+    }
+  </script>
   <script type="text/javascript">
+    if (!params.gaodejskey) throw new Error("no gaodejskey founded.");
     const map = new AMap.Map("container", {
       resizeEnable: true,
-      center: [120.159949, 30.257373],
+      center: [120.159949, 30.257373], // lng, lat
       zoom: 13
     });
     let markers = [];
@@ -157,18 +189,29 @@ ${firstPOI.location.lat} ${firstPOI.location.lng}  ${firstPOI.address}
     window.markIt = function () {
       clearMarker();
       const lines = document.getElementById('pois').value.split('\n');
-      const pois = lines.map(l => {
-        const sections = l.split(/\s+/);
-        if (!sections[2]) return;
-        return {
-          text: sections[0],
-          position: [sections[2] - 0, sections[1] - 0],
-          color: sections[3] || '#1976d2'
+      const invalids = [];
+      const pois = lines.map(x => x.trim()).filter(Boolean).map(l => {
+        const sections = l.split(/,/).map(x => x.trim()).filter(Boolean);
+        const len = sections.length;
+        const isColor = (x) => x && x[0] === "#";
+        const hasColor = isColor(sections[len - 1]);
+        const lng = hasColor ? sections[len - 3].trim() : sections[len - 2].trim() - 0;
+        const lat = hasColor ? sections[len - 2].trim() : sections[len - 1].trim() - 0;
+        if (/NaN/.test(lng) || /NaN/.test(lat)) {
+          console.log(l + " is invalid");
+          invalids.push(l);
+          return null;
         }
-      }).filter(Boolean).forEach(p =>
-        addMarker(p)
-      );
-      alert("done");
+        
+        return {
+          text: sections[0].trim(),
+          position: [lng, lat], // lng, lat
+          color: hasColor ? sections[len - 1] : '#1976d2'
+        }
+      }).filter(Boolean);
+      if (pois.length === 0) return alert("no pois founded");
+      pois.forEach(p =>  addMarker(p));
+      alert("done! marked " + pois.length + " pois, " + (invalids.length ? " invalids are: \n" + invalids.join(" \n") : ''));
 
     }
   </script>

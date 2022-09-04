@@ -14,10 +14,8 @@
     </style>
     <title>POLYGON TEST</title>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
-    <script src="https://webapi.amap.com/maps?v=1.4.15&key=8dc0e082257bfba1367acb9fbc014f62&plugin=AMap.PolyEditor,AMap.PlaceSearch"></script>
-<script type="text/javascript" src="https://cache.amap.com/lbs/static/PlaceSearchRender.js"></script>
-    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
-</head>
+    
+ </head>
 <body>
 <div id="container"></div>
 <div class="nav-card" style="width: 120px;position:fixed;top:10px;left:10px;width:200px;">
@@ -32,8 +30,25 @@
 <div style="position:fixed;bottom:20px;left:10px;">
   <textarea style="width:200px;height:60px;font-size:9px;" id="polygondata" ></textarea>
 </div>
-
+<script>
+  const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+  function writeScript(url) {
+    document.write("<script " + `type="text/javascript"
+  src="${url}"></` + "script>");
+  }
+  if (params.gaodejskey) {
+    writeScript(`https://webapi.amap.com/maps?v=1.4.15&key=${params.gaodejskey}&plugin=AMap.PolyEditor,AMap.PlaceSearch`);
+    writeScript("https://cache.amap.com/lbs/static/PlaceSearchRender.js");
+    writeScript("https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js");
+  } else {
+    const url = location.origin  + location.pathname;
+    document.body.innerHTML = (`gaodejskey is empty, please define it on querystring by visiting ${url}?gaodejskey=xxxx`);
+   }
+</script>
 <script type="text/javascript">
+  if (!params.gaodejskey) throw new Error("no gaodejskey founded");
 // https://lbs.amap.com/api/javascript-api/guide/overlays/vector-overlay#polygon
 
   const map = new AMap.Map("container", {
