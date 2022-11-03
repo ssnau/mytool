@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
-import Col from 'react-bootstrap/Col';
+
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import Form from 'react-bootstrap/Form';
@@ -111,6 +111,7 @@ class Hanviet extends React.Component {
     };
     this.setKey = this.setKey.bind(this);
     this.nextChar = this.nextChar.bind(this);
+    this.compose = this.compose.bind(this);
   }
 
   setKey(k) {
@@ -130,9 +131,38 @@ class Hanviet extends React.Component {
     this.setState({ next });
   }
 
+  compose() {
+    const text = document.getElementById("hsentence").value;
+    const output = text.split('').map(c => {
+      if (c === ' ') return '';
+      console.log(h2vDict.normal);
+      const elem = h2vDict.normal.find(n => n.han === c);
+      return elem ? elem.viets[0] :  "😢"
+     // return h2vDict.normal.find(n => n.han === c) || "😢";
+    }).join(' ');
+    this.setState({ composeResult: output })
+  }
+
+  updateSearchHv(text) {
+     this.setState({ hvtext: text });
+  }
+
+  updateSearchVh(text) {
+    this.setState({ vhtext: text });
+ }
+
   render() {
     const { currentTab, next } = this.state;
-    const { nextChar } = this;
+    const { nextChar, compose } = this;
+
+    const filterLine = (text, ftext) => {
+      if (!ftext) return text;
+      if (ftext.trim().length === 0) return text;
+      const utext = text.toUpperCase();
+      const uftext = ftext.toUpperCase();
+      return utext.split("\n").filter(t => t.indexOf(uftext) > -1).join("\n");
+    }
+
     return (
       <div style={{ marginTop: 12 }} >
         <div style={{ margin: "16px " }}>
@@ -141,12 +171,15 @@ class Hanviet extends React.Component {
         <Container>
           <Tabs activeKey={currentTab} onSelect={k => this.setKey(k)}>
             <Tab eventKey="han-viet" title="han-viet">
-              <pre style={{ fontFamily: 'lora' }}>{hanVietText}</pre>
+              <input onChange={e => this.updateSearchHv(e.target.value)} style={{ padding: "4px 0px", margin: "6px 0px"}} />
+              <pre style={{ fontFamily: 'lora' }}>{filterLine(hanVietText, this.state.hvtext)}</pre>
             </Tab>
             <Tab eventKey="viet-han" title="viet-han">
-              <pre style={{ fontFamily: 'lora' }}>{vietHanText}</pre>
+              <input onChange={e => this.updateSearchVh(e.target.value)} style={{ padding: "4px 0px", margin: "6px 0px"}} />
+              <pre style={{ fontFamily: 'lora' }}>{filterLine(vietHanText, this.state.vhtext)}</pre>
             </Tab>
             <Tab eventKey="test" title="test">
+              <br />
               <Button onClick={nextChar} variant="primary">NEXT</Button>
 
               <br />
@@ -154,6 +187,15 @@ class Hanviet extends React.Component {
               <pre style={{ fontFamily: 'lora' }}> {next && next.word} </pre>
               <br />
               <pre style={{ fontFamily: 'lora' }}> {next && next.answer} </pre>
+            </Tab>
+            <Tab eventKey="compose" title="compose">
+              <input id="hsentence" onKeyDown={e => {
+                if (e.keyCode === 13) return compose();
+              }} style={{ padding: "4px 0px", margin: "6px 6px 6px 0px"}} />
+              <Button onClick={compose} variant="primary">Compose</Button>
+              <br />
+              <pre style={{ fontFamily: 'lora' }}> {this.state.composeResult || "(empty)"} </pre>
+
             </Tab>
           </Tabs>
         </Container>

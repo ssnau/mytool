@@ -439,7 +439,7 @@ module.exports = {
 众: CHÚNG
 爷: GIA
 伞: TẢN
-创: SANG
+创: SÁNG
 肌: CƠ
 朵: ĐOÁ
 杂: TẠP
